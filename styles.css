@@ -132,7 +132,7 @@ section{
   color: #fff;
   background: #6C757D;
 }
-.buttons .undo{
+.buttons .undo, .buttons .redo{
   background: #4A98F7;
   border: 1px solid #4A98F7;
 }

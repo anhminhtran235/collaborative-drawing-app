@@ -1,5 +1,7 @@
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.events.KeyHandler');
+goog.require('goog.events.KeyCodes');
 
 goog.provide('drawings.state');
 goog.provide('drawings.dom');
@@ -16,6 +18,7 @@ function grabDomElements() {
   drawings.dom.clearCanvas = document.querySelector('.clear-canvas');
   drawings.dom.ctx = drawings.dom.canvas.getContext('2d');
   drawings.dom.undoButton = document.querySelector('.undo');
+  drawings.dom.redoButton = document.querySelector('.redo');
 }
 
 function initState() {
@@ -91,6 +94,8 @@ function doneDrawing(e) {
 }
 
 function bindListeners() {
+  const keyHandler = new goog.events.KeyHandler(document);
+
   goog.events.listen(
     drawings.dom.canvas,
     goog.events.EventType.MOUSEDOWN,
@@ -111,17 +116,45 @@ function bindListeners() {
     goog.events.EventType.CLICK,
     undo
   );
+  goog.events.listen(
+    drawings.dom.redoButton,
+    goog.events.EventType.CLICK,
+    redo
+  );
+  keyHandler.listen(goog.events.KeyHandler.EventType.KEY, function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.keyCode == goog.events.KeyCodes.Z) {
+      undo();
+    }
+  });
+  keyHandler.listen(goog.events.KeyHandler.EventType.KEY, function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.keyCode == goog.events.KeyCodes.Y) {
+      redo();
+    }
+  });
 }
 
 function undo() {
   drawings.state.drawingHistory.undo();
+  clearCanvas();
+  redrawFromHistory();
+}
+
+function redo() {
+  drawings.state.drawingHistory.redo();
+  clearCanvas();
+  redrawFromHistory();
+}
+
+function clearCanvas() {
   drawings.dom.ctx.clearRect(
     0,
     0,
     drawings.dom.canvas.width,
     drawings.dom.canvas.height
   );
+}
 
+function redrawFromHistory() {
   drawings.state.drawingHistory.getHistoryClone().forEach((points) => {
     drawings.dom.ctx.beginPath();
     drawings.dom.ctx.moveTo(points[0].x, points[0].y);
