@@ -4,10 +4,6 @@ goog.require('goog.events');
 goog.provide('drawings.state');
 goog.provide('drawings.dom');
 
-// Undo + Redo
-// https://codepen.io/abidibo/pen/kdRZjV
-// https://stackoverflow.com/a/53961111/10566888
-
 function init() {
   grabDomElements();
   initState();
@@ -28,10 +24,9 @@ function initState() {
   drawings.state.brushWidth = 5;
   drawings.state.selectedColor = '#000';
   drawings.state.snapshot = null;
-  drawings.state.drawHistory = [];
-  drawings.state.points = [];
   drawings.state.mouse = { x: 0, y: 0 };
   drawings.state.previous = { x: 0, y: 0 };
+  drawings.state.drawingHistory = new DrawingHistory();
 }
 
 function initCanvas() {
@@ -62,8 +57,8 @@ function startDrawing(e) {
     y: drawings.state.mouse.y,
   };
   drawings.state.mouse = getMousePosition(drawings.dom.canvas, e);
-  drawings.state.points = [];
-  drawings.state.points.push({ x: e.offsetX, y: e.offsetY });
+  drawings.state.drawingHistory.clearCurrentDrawing();
+  drawings.state.drawingHistory.addPoint(e.offSetX, e.offSetY);
 }
 
 function drawing(e) {
@@ -76,10 +71,10 @@ function drawing(e) {
     y: drawings.state.mouse.y,
   };
   drawings.state.mouse = getMousePosition(drawings.dom.canvas, e);
-  drawings.state.points.push({
-    x: drawings.state.mouse.x,
-    y: drawings.state.mouse.y,
-  });
+  drawings.state.drawingHistory.addPoint(
+    drawings.state.mouse.x,
+    drawings.state.mouse.y
+  );
 
   drawings.dom.ctx.beginPath();
   drawings.dom.ctx.moveTo(drawings.state.previous.x, drawings.state.previous.y);
@@ -92,7 +87,7 @@ function drawing(e) {
 
 function doneDrawing(e) {
   drawings.state.isDrawing = false;
-  drawings.state.drawHistory.push(drawings.state.points);
+  drawings.state.drawingHistory.saveAndClearCurrentDrawing();
 }
 
 function bindListeners() {
@@ -119,7 +114,7 @@ function bindListeners() {
 }
 
 function undo() {
-  drawings.state.drawHistory.pop();
+  drawings.state.drawingHistory.undo();
   drawings.dom.ctx.clearRect(
     0,
     0,
@@ -127,7 +122,7 @@ function undo() {
     drawings.dom.canvas.height
   );
 
-  drawings.state.drawHistory.forEach((points) => {
+  drawings.state.drawingHistory.getHistoryClone().forEach((points) => {
     drawings.dom.ctx.beginPath();
     drawings.dom.ctx.moveTo(points[0].x, points[0].y);
     points.forEach((point) => {
