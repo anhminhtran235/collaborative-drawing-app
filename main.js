@@ -46,6 +46,18 @@ function doneDrawing(e) {
   drawings.state.drawingHistory.saveAndClearCurrentDrawing();
 }
 
+function undo() {
+  drawings.state.drawingHistory.undo();
+  drawings.state.canvas.clearCanvas();
+  drawings.state.canvas.redrawFromHistory(drawings.state.drawingHistory);
+}
+
+function redo() {
+  drawings.state.drawingHistory.redo();
+  drawings.state.canvas.clearCanvas();
+  drawings.state.canvas.redrawFromHistory(drawings.state.drawingHistory);
+}
+
 function bindListeners() {
   const keyHandler = new goog.events.KeyHandler(document);
 
@@ -84,16 +96,4 @@ function bindListeners() {
       redo();
     }
   });
-}
-
-function undo() {
-  drawings.state.drawingHistory.undo();
-  drawings.state.canvas.clearCanvas();
-  drawings.state.canvas.redrawFromHistory(drawings.state.drawingHistory);
-}
-
-function redo() {
-  drawings.state.drawingHistory.redo();
-  drawings.state.canvas.clearCanvas();
-  drawings.state.canvas.redrawFromHistory(drawings.state.drawingHistory);
 }
