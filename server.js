@@ -47,4 +47,29 @@ app.post('/joinRoom', async (req, res) => {
   }
 });
 
+app.delete('/leaveRoom', async (req, res) => {
+  try {
+    const { peerId } = req.query;
+    const peer = await PeerRepo.findPeerById(peerId);
+    if (!peer) {
+      throw new Error(`Peer with id '${peerId}' does not exist`);
+    }
+
+    const room = await RoomRepo.findRoomById(peer.room.toString());
+    room.peers = room.peers.filter((peer) => peer._id.toString() !== peerId);
+
+    if (room.peers.length === 0) {
+      await RoomRepo.deleteRoom(room._id);
+    } else {
+      await room.save();
+    }
+
+    await PeerRepo.deleteById(peerId);
+    res.json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.json({ error });
+  }
+});
+
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));

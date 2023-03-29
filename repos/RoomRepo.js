@@ -34,6 +34,24 @@ const findRoomByName = async (roomName) => {
   }
 };
 
+const findRoomById = async (roomId) => {
+  try {
+    return await Room.findById(roomId);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+const deleteRoom = async (roomId) => {
+  try {
+    return Room.findByIdAndDelete(roomId);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 const getNewRoomName = async () => {
   let roomName = createShortId();
   while (await Room.exists({ name: roomName })) {
@@ -42,4 +60,10 @@ const getNewRoomName = async () => {
   return roomName;
 };
 
-module.exports = { createNewRoom, addPeerToRoom, findRoomByName };
+module.exports = {
+  createNewRoom,
+  addPeerToRoom,
+  findRoomByName,
+  deleteRoom,
+  findRoomById,
+};
