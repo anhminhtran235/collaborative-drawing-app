@@ -8,8 +8,7 @@ const RoomSchema = new mongoose.Schema({
   },
   peers: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'peer',
+      type: String,
     },
   ],
 });

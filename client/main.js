@@ -9,6 +9,90 @@ goog.provide('drawings.dom');
 function init() {
   grabDomElementsAndInitState();
   bindListeners();
+  connectToPeerServer();
+}
+
+function connectToPeerServer() {
+  const peer = new Peer({
+    host: 'code-spot-peer-server.herokuapp.com/',
+    port: '/..',
+    secure: true,
+    pingInterval: 3000,
+    debug: 2,
+  });
+
+  peer.on('open', (id) => {
+    console.log('My peer ID is: ' + id);
+    joinRoom(id);
+  });
+
+  peer.on('error', (error) => {
+    console.log(error);
+  });
+
+  peer.on('connection', (conn) => {
+    console.log('connected to peer');
+    conn.on('open', () => {
+      console.log('connection open');
+    });
+    conn.on('data', (message) => {
+      console.log('Received peer message: ' + message);
+    });
+    conn.on('close', () => {
+      console.log('connection closed');
+    });
+    conn.on('error', (error) => {
+      console.log(error);
+    });
+  });
+}
+
+function joinRoom(peerId) {
+  const currentUrl = window.location.href;
+  if (currentUrl.includes('room=')) {
+    const roomName = currentUrl.split('=').pop();
+    joinExistingRoom(roomName, peerId);
+  } else {
+    joinNewRoom(peerId);
+  }
+}
+
+function joinExistingRoom(roomName, peerId) {
+  fetch('http://localhost:5000/api/joinRoom', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      roomName,
+      peerId,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      const otherPeers = data.otherPeers || [];
+      otherPeers.forEach((peer) => {});
+    })
+    .catch((error) => console.error(error));
+}
+
+function joinNewRoom(peerId) {
+  fetch('http://localhost:5000/api/createRoom', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      peerId,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      const url = `http://localhost:5000?room=${data.roomName}`;
+      window.history.pushState(null, null, url);
+    })
+    .catch((error) => console.error(error));
 }
 
 function grabDomElementsAndInitState() {

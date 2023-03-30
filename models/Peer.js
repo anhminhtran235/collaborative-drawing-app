@@ -5,6 +5,11 @@ const PeerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'room',
   },
+  peerId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
 });
 
 module.exports = Peer = mongoose.model('peer', PeerSchema);

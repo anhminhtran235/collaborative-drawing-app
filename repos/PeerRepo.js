@@ -1,8 +1,8 @@
 const Peer = require('../models/Peer');
 
-const createNewPeer = async (roomId) => {
+const createNewPeer = async (roomId, peerId) => {
   try {
-    const peer = new Peer({ room: roomId });
+    const peer = new Peer({ room: roomId, peerId });
     return peer.save();
   } catch (error) {
     console.error(error);
@@ -10,22 +10,22 @@ const createNewPeer = async (roomId) => {
   }
 };
 
-const findPeerById = async (peerId) => {
+const findByPeerId = async (peerId) => {
   try {
-    return Peer.findById(peerId);
+    return Peer.findOne({ peerId });
   } catch (error) {
     console.error(error);
     throw error;
   }
 };
 
-const deleteById = async (peerId) => {
+const deleteByPeerId = async (peerId) => {
   try {
-    return Peer.findByIdAndDelete(peerId);
+    return Peer.findOneAndDelete({ peerId });
   } catch (error) {
     console.error(error);
     throw error;
   }
 };
 
-module.exports = { createNewPeer, findPeerById, deleteById };
+module.exports = { createNewPeer, findByPeerId, deleteByPeerId };
